@@ -4,17 +4,12 @@ centos
 debian
 user
 guest
-test
 ftp
-mysql
 www-data
 apache
 nginx
 sshd
-postfix
 sysadmin
 www
 postgres
-tomcat
-redis
 mongodb
