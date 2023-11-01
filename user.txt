@@ -3,13 +3,6 @@ ubuntu
 centos
 debian
 user
-guest
-ftp
-www-data
-apache
-nginx
-sshd
+guests
 sysadmin
 www
-postgres
-mongodb
